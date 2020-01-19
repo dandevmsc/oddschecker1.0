@@ -20,7 +20,7 @@ from random import randint
 def make_soup(url):
     thepage=requests.get(url,headers={'User-Agent': 'Mozilla/5.0'}).text
     soupdata=soup(thepage,"html.parser")
-    #time.sleep(randint(15,23))
+    time.sleep(randint(15,23))
     return soupdata
 
 def eventcategory(my_url,sport):
@@ -70,22 +70,18 @@ def getodds(my_url,urls2,brokermap):
 
 
 
-    tbestbks1=[",".join(x) for x in replacebroker(tbestbks,brokermap)]
+    tbestbks1=replacebroker(tbestbks,brokermap)
     return pd.DataFrame(list(itertools.zip_longest(link,tbestbks1 ,tbestdig,tdatabname,sport1,match,bettype,tournament)),columns=['link','broker', 'bestdig', 'name','sport','match','bettype','tournament'])
    
   
-def replacebroker(list, dictionary):
-    new_list1 = []
-    for i1, inner_1 in enumerate(list):
-        new_list = []
-        inner_1=(inner_1.split(","))
-        for i2,item in enumerate(inner_1):
-            if item in dictionary:
-                new_list.append(dictionary[item])
-            else:
-                new_list.append(item)
-        new_list1.append(new_list)
-    return new_list1
+def replacebroker(list1, dictionary):
+    new_list=[]
+    for i2,item in enumerate(list1):
+        if item in dictionary:
+            new_list.append(dictionary[item])
+        else:
+            new_list.append(item)
+    return new_list
 
 
 my_url = 'https://www.oddschecker.com/'
@@ -99,17 +95,16 @@ secondurls=eventsubcategory(firsturls,'minitable-header beta-h3')
 otherurls=eventsubcategory(firsturls,'outright-text no-odds')
 
 odds=getodds(my_url,secondurls,brokermap)
-print(odds)
+
 oddssupplement = getodds(my_url,otherurls,brokermap)
-print(oddssupplement)
 odds=odds.append(oddssupplement)
-odds=odds.rename(columns={"broker": "brokerlist"})
-odds['brokerlist']=odds['brokerlist'].str.split(",").tolist()
-odds=odds.assign(broker=odds['brokerlist'].values.tolist()).explode('broker').reset_index(drop=True)
-odds=odds.drop(columns='brokerlist')
+odds=odds.rename(columns={"brokerlist": "broker"})
 odds.insert(0, 'timestamp', pd.datetime.utcnow().replace(microsecond=0))
 print(odds)
+odds=odds.drop(odds[(odds['broker']=='SmartMarkets')|(odds['broker']=='Matchbook')|(odds['broker']=='BetDaq')|(odds['broker']=='Betfairexchange')].index)
+
 odds.to_csv("C:\\Users\\user1\\Documents\\Odds\\odds"+datetime.utcnow().strftime('%Y-%m-%d')+".csv",index=False)
+
 
 
 def odds(file_location):
