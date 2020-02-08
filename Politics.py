@@ -98,11 +98,13 @@ odds=getodds(my_url,secondurls,brokermap)
 
 oddssupplement = getodds(my_url,otherurls,brokermap)
 odds=odds.append(oddssupplement)
+
+
 odds=odds.rename(columns={"brokerlist": "broker"})
 odds.insert(0, 'timestamp', pd.datetime.utcnow().replace(microsecond=0))
-print(odds)
-odds=odds.drop(odds[(odds['broker']=='SmartMarkets')|(odds['broker']=='Matchbook')|(odds['broker']=='BetDaq')|(odds['broker']=='Betfairexchange')].index)
 
+odds=odds.reset_index()
+odds.drop(odds[(odds['broker']=="SmartMarkets")|(odds['broker']=='Matchbook')|(odds['broker']=='BetDaq')|(odds['broker']=='Betfairexchange')].index,inplace=True)
 odds.to_csv("C:\\Users\\user1\\Documents\\Odds\\odds"+datetime.utcnow().strftime('%Y-%m-%d')+".csv",index=False)
 
 
